@@ -1,10 +1,48 @@
 // Add imports here
+// Generate a random nmemonic
+function generateMnemonic(){
+    return BIP39.generateMnemonic(); 
+    var isValid = BIP39.validateMnemonic("Enter your mnemonic here")
+    // This will return false because "Enter your mneomnic here" is not a valid phrase
+}
 
-
+//add constants here
+const hdkey = require("ethereumjs-wallet/hdkey");
+const keccak256 = require('js-sha3').keccak256;
+const Wallet = require('ethereumjs-wallet');
+const EthereumTx = require('ethereumjs-tx');
 
 // Add functions here
+function generateSeed(mnemonic){
+    return BIP39.mnemonicToSeed(mnemonic);
+}
 
+function generatePrivKey(mnemonic){
+    const seed = generateSeed(mnemonic);
+    return hdkey.fromMasterSeed(seed).derivePath(`m/44'/60'/0'/0/0`).getWallet().getPrivateKey();
+}
 
+function derivePubKey(privKey){
+    const wallet = Wallet.fromPrivateKey(privKey) ;   
+    return wallet.getPublicKey();
+}
+
+function deriveEthAddress(pubKey){
+    const address = keccak256(pubKey) // keccak256 hash of  publicKey
+    // Get the last 20 bytes of the public key
+    return "0x" + address.substring(address.length - 40, address.length)    
+}
+
+function signTx(privKey, txData){
+    const tx = new EthereumTx(txData)
+    tx.sign(privKey)
+    return tx
+}
+
+function getSignerAddress(signedTx){
+    return "0x" + signedTx.getSenderAddress().toString('hex')
+  }
+  
 
 /*
 
